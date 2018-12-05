@@ -1,0 +1,5 @@
+Describe Dhall
+  Before all
+    let Dhall = vital#vital#import('Dhall')
+  End
+End

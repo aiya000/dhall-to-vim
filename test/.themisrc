@@ -1,0 +1,6 @@
+call themis#helper('command').with(themis#helper('assert'))
+
+if $VITAL_PATH ==# ''
+  throw 'Missing $VITAL_PATH'
+endif
+call themis#option('runtimepath', [$VITAL_PATH, '..'])
