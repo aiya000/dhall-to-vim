@@ -1,0 +1,22 @@
+Describe Dhall
+  Before all
+    let Dhall = vital#vital#import('Dhall')
+  End
+
+  Context .read()
+    It interprets dhall's expressions to the Vim script's value
+      Assert Equals(Dhall.read('10'), 10)
+      Assert Equals(Dhall.read('{foo = 10}'), {'foo': 10})
+      Assert Equals(Dhall.read('<Foo = 10 | Bar : Natural>'), 10)
+
+      Throws /^vital: Dhall:/ Dhall.read('<invalid input>')
+    End
+  End
+
+  Context .readfile()
+    It reads dhall's expressions from .dhall files
+      let path = getcwd() . '/test/test.dhall'
+      call Dhall.readfile(path)
+    End
+  End
+End
