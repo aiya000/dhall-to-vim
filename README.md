@@ -1,4 +1,4 @@
-# :diamond_shape_with_a_dot_inside: dhall-vim :diamond_shape_with_a_dot_inside:
+# :diamond_shape_with_a_dot_inside: dhall-to-vim :diamond_shape_with_a_dot_inside:
 
 The dhall-lang language binding for Vim script.
 
