@@ -1,0 +1,131 @@
+Describe Dhall.Parser
+  Before all
+    let Parser = vital#vital#import('Dhall.Parser')
+  End
+
+  Context primitive
+    It natural numbers
+      Assert Equals(Parser.parse('10'), 10)
+    End
+
+    It integers
+      Assert Equals(Parser.parse('+10'), +10)
+      Assert Equals(Parser.parse('-10'), -10)
+    End
+
+    It double float numbers
+      Assert Equals(Parser.parse('1.0'), 1.0)
+    End
+
+    It texts
+      Assert Equals(Parser.parse('"xxx"'), 'xxx')
+    End
+
+    It booleans
+      Assert Equals(Parser.parse('True'), v:true)
+      Assert Equals(Parser.parse('False'), v:false)
+    End
+
+    It records
+      Assert Equals(Parser.parse('{}'), {})
+      Assert Equals(Parser.parse('{foo = 10}'), {foo: 10})
+      Assert Equals(Parser.parse('{foo = 10, bar = 20}'), {foo: 10, bar: 20})
+      Assert Equals(Parser.parse('{foo = {bar = {}}}'), {foo: {bar: {}}})
+    End
+
+    It lists
+      Assert Equals(Parser.parse('[]'), [])
+      Assert Equals(Parser.parse('[10]'), [10])
+      Assert Equals(Parser.parse('[1, 2, 3]'), [1, 2, 3])
+    End
+
+    It type specifications
+      Assert Equals(
+        \ Parser.parse('10 : Natural'),
+        \ Parser.type(10, Parser.type_nat))
+
+      Assert Equals(
+        \ Parser.parse('+10 : Integer'),
+        \ Parser.type(+10, Parser.type_int))
+
+      Assert Equals(
+        \ Parser.parse('1.0 : Double'),
+        \ Parser.type(1.0, Parser.type_double))
+
+      Assert Equals(
+        \ Parser.parse('"10" : Text'),
+        \ Parser.type('10', Parser.type_text))
+
+      Assert Equals(
+        \ Parser.parse('True : Bool'),
+        \ Parser.type(v:true, Parser.type_bool))
+
+      Assert Equals(
+        \ Parser.parse('[10] : List Natural'),
+        \ Parser.type([10], Parser.type_list(Parser.type_nat)))
+
+      Assert Equals(
+        \ Parser.parse('{foo = 10} : {foo : Natural}'),
+        \ Parser.type({foo: 10}, Parser.type_record({foo: Parser.type_nat})))
+    End
+
+    It unions
+      " Vim has the record idion, but doesn't have union idiom.
+      " Parser.union_term is instead of it.
+
+      Assert Equals(
+        \ Parser.parse('<>'),
+        \ Parser.union())
+
+      Assert Equals(
+        \ Parser.parse('<Foo = 10>'),
+        \ Parser.union(Parser.union_term('Foo', 10)))
+
+      Assert Equals(
+        \ Parser.parse('<Foo : Natural>'),
+        \ Parser.union(Parser.union_term('Foo', Parser.type_nat)))
+
+      Assert Equals(
+        \ Parser.parse('<Foo = 10 | Bar : Natural>'),
+        \ Parser.union(
+          \ Parser.union_term('Foo', 10),
+          \ Parser.union_term('Bar', Parser.type_nat)))
+
+      Assert Equals(
+        \ Parser.parse('<You = <Me = 10>>'),
+        \ Parser.union(Parser.union_term('You',
+          \ Parser.union(Parser.union_term('Me', 10)))))
+
+      Assert Equals(
+        \ Parser.parse('<Foo = 10> : <Foo : Natural>'),
+        \ Parser.type(
+          \ Parser.union(Parser.union_term('Foo', 10)),
+          \ Parser.type_union(
+            \ Parser.union_term('Foo', Parser.type_nat))))
+    End
+
+    It optionals
+      Assert Equals(
+        \ Parser.parse('[] : Optional Natural'),
+        \ Parser.type([], Parser.type_opt(Parser.type_nat)))
+
+      Assert Equals(
+        \ Parser.parse('[10] : Optional Natural'),
+        \ Parser.type([10], Parser.type_opt(Parser.type_nat)))
+    End
+  End
+
+  Context syntax
+    It operators
+      Assert Equals(
+        \ Parser.parse('True || False'),
+        \ Parser.op('||', v:true, v:false))
+    End
+
+    It if
+      Assert Equals(
+        \ Parser.parse('if True then 10 else 20'),
+        \ Parser.if(v:true, 10, 20))
+    End
+  End
+End
